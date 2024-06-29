@@ -1,6 +1,5 @@
 # ChatGpt Code Review
-
-[English Document]("https://github.com/hanshuaikang/chatgpt-codereview/blob/main/readme_en.md")
+[English Document](https://github.com/hanshuaikang/chatgpt-codereview/blob/main/readme_en.md)
 
 ChatGpt Code Review 是一个用Golang 编写的 AI code Review 工具，它可以利用AI自动某个Github PR
 的 Review ，并 comment 到对应的代码段下。效果如下:
