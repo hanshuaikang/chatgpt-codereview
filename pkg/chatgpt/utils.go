@@ -61,7 +61,7 @@ func parseComments(input string) map[int]string {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading input: %s", err)
+		fmt.Fprintf(os.Stderr, "Error reading input: %s\n", err)
 		return nil
 	}
 

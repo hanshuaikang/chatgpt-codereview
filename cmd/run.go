@@ -32,7 +32,7 @@ var runCmd = &cobra.Command{
 		configFilePath := cmd.Flag("config").Value.String()
 		config, err := parseConfig(configFilePath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "parse config file failed: %s", err)
+			fmt.Fprintf(os.Stderr, "parse config file failed: %s\n", err)
 			os.Exit(1)
 		}
 		if config.Prompt == "" {
@@ -43,7 +43,7 @@ var runCmd = &cobra.Command{
 		ctx := context.Background()
 		err = gpt.RunCodeReview(ctx)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "run code review failed: %s", err)
+			fmt.Fprintf(os.Stderr, "run code review failed: %s\n", err)
 			os.Exit(1)
 		}
 	},

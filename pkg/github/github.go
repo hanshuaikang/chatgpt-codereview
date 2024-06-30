@@ -96,7 +96,7 @@ func (c *Client) SubmitCodeReview(ctx context.Context, commit github.RepositoryC
 		Comments: comments,
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error creating review: %s", err)
+		fmt.Fprintf(os.Stderr, "error creating review: %s\n", err)
 		return err
 	}
 

@@ -123,10 +123,10 @@ func (c *ChatGpt) RunCodeReview(ctx context.Context) error {
 			fmt.Fprintf(os.Stdout, "commit[%s]: %s  already reviewed\n", *commit.SHA, *commit.Commit.Message)
 			continue
 		}
-		fmt.Fprintf(os.Stdout, "now reviewing commit[%s]: %s", *commit.SHA, *commit.Commit.Message)
+		fmt.Fprintf(os.Stdout, "now reviewing commit[%s]: %s\n", *commit.SHA, *commit.Commit.Message)
 		comments, err := c.reviewCommit(ctx, commit)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error reviewing commit, commit[%s]: %s, err :%s", *commit.SHA, *commit.Commit.Message, err)
+			fmt.Fprintf(os.Stderr, "error reviewing commit, commit[%s]: %s, err :%s\n", *commit.SHA, *commit.Commit.Message, err)
 			return err
 		}
 		fmt.Fprintf(os.Stdout, "found %d comments in commit[%s]: %s \n", len(comments), *commit.SHA, *commit.Commit.Message)
@@ -136,10 +136,10 @@ func (c *ChatGpt) RunCodeReview(ctx context.Context) error {
 		err = c.githubCli.SubmitCodeReview(ctx, *commit, comments)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "submit code review error, commit[%s]: %s, err: %s", *commit.SHA, *commit.Commit.Message, err)
+			fmt.Fprintf(os.Stderr, "submit code review error, commit[%s]: %s, err: %s\n", *commit.SHA, *commit.Commit.Message, err)
 			return err
 		}
-		fmt.Fprintf(os.Stdout, "submit code review success, commit[%s]: %s, comment nums: %d", *commit.SHA, *commit.Commit.Message, len(comments))
+		fmt.Fprintf(os.Stdout, "submit code review success, commit[%s]: %s, comment nums: %d\n", *commit.SHA, *commit.Commit.Message, len(comments))
 	}
 
 	return nil
