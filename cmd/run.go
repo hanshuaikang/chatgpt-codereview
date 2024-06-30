@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hanshuaikang/chatgpt-codereview/pkg"
 	"github.com/hanshuaikang/chatgpt-codereview/pkg/chatgpt"
+	"github.com/hanshuaikang/chatgpt-codereview/pkg/github"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -39,7 +40,8 @@ var runCmd = &cobra.Command{
 			config.Prompt = prompt
 		}
 		defaultGptCli := chatgpt.NewGptClient(config)
-		gpt := chatgpt.NewChatGpt(&config, defaultGptCli)
+		githubCli := github.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr)
+		gpt := chatgpt.NewChatGpt(&config, githubCli, defaultGptCli)
 
 		ctx := context.Background()
 		err = gpt.RunCodeReview(ctx)

@@ -48,6 +48,7 @@ import (
 	"context"
 	"github.com/hanshuaikang/chatgpt-codereview/pkg"
 	"github.com/hanshuaikang/chatgpt-codereview/pkg/chatgpt"
+	"github.com/hanshuaikang/chatgpt-codereview/pkg/github"
 	"os"
 )
 
@@ -61,7 +62,8 @@ func main() {
 		Token:  "",
 	}
 	defaultGptCli := chatgpt.NewGptClient(config)
-	gpt := chatgpt.NewChatGpt(&config, defaultGptCli)
+	githubCli := github.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr)
+	gpt := chatgpt.NewChatGpt(&config, githubCli, defaultGptCli)
 
 	ctx := context.Background()
 	err := gpt.RunCodeReview(ctx)
@@ -69,4 +71,5 @@ func main() {
 		os.Exit(1)
 	}
 }
+
 ```

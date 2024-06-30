@@ -5,22 +5,32 @@ import (
 	"fmt"
 	"github.com/google/go-github/v62/github"
 	"github.com/hanshuaikang/chatgpt-codereview/pkg"
-	githubCli "github.com/hanshuaikang/chatgpt-codereview/pkg/github"
 	"os"
 )
 
 type ChatGpt struct {
-	githubCli *githubCli.Client
+	githubCli pkg.Repo
 	config    *pkg.Config
 	gptCli    pkg.Cli
 }
 
-func NewChatGpt(config *pkg.Config, gptCli pkg.Cli) pkg.CodeReviewRunner {
+func NewChatGpt(config *pkg.Config, repoCli pkg.Repo, gptCli pkg.Cli) pkg.CodeReviewRunner {
 	return &ChatGpt{
-		githubCli: githubCli.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr),
+		githubCli: repoCli,
 		gptCli:    gptCli,
 		config:    config,
 	}
+}
+
+func (c *ChatGpt) isInChanged(line int, pos map[int]int) bool {
+
+	for start, end := range pos {
+		if line >= start && line <= end {
+			return true
+		}
+	}
+	return false
+
 }
 
 // reviewCommit call chatgpt client and review a commit files
@@ -29,21 +39,22 @@ func (c *ChatGpt) reviewCommit(ctx context.Context, commit *github.RepositoryCom
 	var comments []*github.DraftReviewComment
 	fmt.Fprintf(os.Stdout, "this commit has %d files need to review \n", len(commit.Files))
 	for _, file := range commit.Files {
-		diffStart, diffEnd := parseDiff(*file.Patch)
+		pos := parseDiff(*file.Patch)
 		cc, err := c.githubCli.GetCommitFileContent(ctx, *file.Filename, *commit.SHA)
 		if err != nil {
-			fmt.Println("Error getting file content:", err)
+			fmt.Println("error getting file content:", err)
 			return nil, err
 		}
 		content := buildParam(c.config.Prompt, cc)
 		reviewedReplyContent, err := c.gptCli.Send(ctx, content)
 		if err != nil {
-			fmt.Println("Error making request:", err)
+			fmt.Println("error making request:", err)
 			return nil, err
 		}
 		gptComments := parseComments(reviewedReplyContent)
 		for k, v := range gptComments {
-			if k < diffStart || k > diffEnd {
+
+			if !c.isInChanged(k, pos) {
 				continue
 			}
 			comments = append(comments, &github.DraftReviewComment{

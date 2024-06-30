@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/go-github/v62/github"
+	"github.com/hanshuaikang/chatgpt-codereview/pkg"
 	"os"
 	"strings"
 )
@@ -15,7 +16,7 @@ type Client struct {
 	prId   int
 }
 
-func NewGithubCli(token string, owner string, repo string, prId int) *Client {
+func NewGithubCli(token string, owner string, repo string, prId int) pkg.Repo {
 	return &Client{
 		client: github.NewClient(nil).WithAuthToken(token),
 		owner:  owner,

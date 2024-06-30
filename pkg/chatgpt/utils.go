@@ -10,8 +10,9 @@ import (
 )
 
 // parseDiff calculate the start and start of the DIFF
-func parseDiff(diff string) (int, int) {
+func parseDiff(diff string) map[int]int {
 	lines := strings.Split(diff, "\n")
+	result := map[int]int{}
 	for _, line := range lines {
 		if strings.HasPrefix(line, "@@") {
 			// 解析 @@ -106,46 +106,6 @@ 这样的行
@@ -34,11 +35,11 @@ func parseDiff(diff string) (int, int) {
 			}
 
 			endLine := startLine + numLines - 1
-			return startLine, endLine
+			result[startLine] = endLine
 		}
 	}
 
-	return 0, 0
+	return result
 }
 
 func parseComments(input string) map[int]string {
