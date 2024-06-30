@@ -1,16 +1,12 @@
 package chatgpt
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/google/go-github/v62/github"
 	"github.com/hanshuaikang/chatgpt-codereview/pkg"
 	githubCli "github.com/hanshuaikang/chatgpt-codereview/pkg/github"
 	"os"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 type ChatGpt struct {
@@ -19,51 +15,15 @@ type ChatGpt struct {
 	gptCli    pkg.Cli
 }
 
-func NewChatGpt(config *pkg.Config) *ChatGpt {
+func NewChatGpt(config *pkg.Config, gptCli pkg.Cli) pkg.CodeReviewRunner {
 	return &ChatGpt{
 		githubCli: githubCli.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr),
-		gptCli:    NewGptClient(config),
+		gptCli:    gptCli,
 		config:    config,
 	}
 }
 
-func (c *ChatGpt) parseAndApplyDiff(diffContent string) (string, error) {
-	scanner := bufio.NewScanner(strings.NewReader(diffContent))
-	hunkRegex := regexp.MustCompile(`^@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
-
-	var modifiedContent []string
-	lineNumber := 0
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		// 检查是否为 hunk 头部
-		if matches := hunkRegex.FindStringSubmatch(line); matches != nil {
-			startLine, _ := strconv.Atoi(matches[3])
-			lineNumber = startLine - 1
-			continue
-		}
-
-		// 处理添加的行
-		if strings.HasPrefix(line, "+") {
-			lineNumber++
-			modifiedContent = append(modifiedContent, fmt.Sprintf("%d %s", lineNumber, line[1:]))
-		}
-
-		// 处理未修改的行
-		if strings.HasPrefix(line, " ") {
-			lineNumber++
-			modifiedContent = append(modifiedContent, fmt.Sprintf("%d %s", lineNumber, line[1:]))
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-
-	return strings.Join(modifiedContent, "\n"), nil
-}
-
+// reviewCommit call chatgpt client and review a commit files
 func (c *ChatGpt) reviewCommit(ctx context.Context, commit *github.RepositoryCommit) ([]*github.DraftReviewComment, error) {
 
 	var comments []*github.DraftReviewComment
@@ -75,7 +35,8 @@ func (c *ChatGpt) reviewCommit(ctx context.Context, commit *github.RepositoryCom
 			fmt.Println("Error getting file content:", err)
 			return nil, err
 		}
-		reviewedReplyContent, err := c.gptCli.Send(ctx, cc)
+		content := buildParam(c.config.Prompt, cc)
+		reviewedReplyContent, err := c.gptCli.Send(ctx, content)
 		if err != nil {
 			fmt.Println("Error making request:", err)
 			return nil, err
@@ -133,6 +94,7 @@ func (c *ChatGpt) RunCodeReview(ctx context.Context) error {
 		if comments == nil {
 			continue
 		}
+		// review end , submit the code review with this commit
 		err = c.githubCli.SubmitCodeReview(ctx, *commit, comments)
 
 		if err != nil {

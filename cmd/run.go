@@ -38,7 +38,8 @@ var runCmd = &cobra.Command{
 		if config.Prompt == "" {
 			config.Prompt = prompt
 		}
-		gpt := chatgpt.NewChatGpt(&config)
+		defaultGptCli := chatgpt.NewGptClient(config)
+		gpt := chatgpt.NewChatGpt(&config, defaultGptCli)
 
 		ctx := context.Background()
 		err = gpt.RunCodeReview(ctx)

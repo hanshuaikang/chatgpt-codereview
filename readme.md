@@ -60,7 +60,9 @@ func main() {
 		ApiKey: "",
 		Token:  "",
 	}
-	gpt := chatgpt.NewChatGpt(&config)
+	
+	defaultGptCli := chatgpt.NewGptClient(config)
+	gpt := chatgpt.NewChatGpt(&config, defaultGptCli)
 
 	ctx := context.Background()
 	err := gpt.RunCodeReview(ctx)
