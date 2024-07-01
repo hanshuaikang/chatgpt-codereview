@@ -41,10 +41,10 @@ var runCmd = &cobra.Command{
 		}
 		defaultGptCli := chatgpt.NewGptClient(config)
 		githubCli := github.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr)
-		gpt := chatgpt.NewChatGpt(&config, githubCli, defaultGptCli)
+		runner := pkg.NewCodeReviewRunner(&config, githubCli, defaultGptCli)
 
 		ctx := context.Background()
-		err = gpt.RunCodeReview(ctx)
+		err = runner.RunCodeReview(ctx)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "run code review failed: %s\n", err)
 			os.Exit(1)

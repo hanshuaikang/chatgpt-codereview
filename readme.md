@@ -41,7 +41,7 @@ go get github.com/hanshuaikang/chatgpt-codereview@latest
 ```
 
 main.go
-```bash
+```golang
 package main
 
 import (
@@ -64,10 +64,10 @@ func main() {
 	
     defaultGptCli := chatgpt.NewGptClient(config)
     githubCli := github.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr)
-    gpt := chatgpt.NewChatGpt(&config, githubCli, defaultGptCli)
+    runner := pkg.NewCodeReviewRunner(&config, githubCli, defaultGptCli)
 
 	ctx := context.Background()
-	err := gpt.RunCodeReview(ctx)
+	err := runner.RunCodeReview(ctx)
 	if err != nil {
 		os.Exit(1)
 	}
