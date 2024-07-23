@@ -20,6 +20,7 @@
 - `max_line_num`: 如果待 review 的文件行数大于该配置, 则跳过该 文件 的 review， 为 0 则不限制。
 - `max_commit_num`: 如果待 review 的 pr 的 commits 数量大于该配置，则跳过该 pr 的 review， 为 0 则不限制。
 - `review_suffixes`: 当指定了 review_suffixes 时, 将只会 review 为 review_suffixes 后缀的文件，为 [] 则不限制。
+- `max_concurrency`: 同时 review 的最大并发数, 不设置时为 1
 
 有两种方式使用 ChatGpt Code Review
 
@@ -38,6 +39,7 @@ pr: pr Id
 max_file_num: 10
 max_line_num: 1000
 max_commit_num: 100
+max_concurrency: 3
 review_suffixes:
   - ".go"
 ```
@@ -79,6 +81,7 @@ func main() {
 		MaxFileNum: 10,
 		MaxLineNum: 1000,
 		MaxCommitNum: 100,
+		MaxConcurrency: 3,
 		ReviewSuffixes: []string{".go"},
 	}
 	

@@ -18,6 +18,7 @@
 - `max_line_num`: If the number of lines in a file to be reviewed exceeds this value, the file review will be skipped. If set to 0, there is no limit.
 - `max_commit_num`: If the number of commits in a pull request to be reviewed exceeds this value, the PR review will be skipped. If set to 0, there is no limit.
 - `review_suffixes`: When `review_suffixes` is specified, only files with the specified suffixes will be reviewed. If set to an empty array (`[]`), there is no restriction.
+- `max_concurrency`: the maximum concurrent number of review at the same time, 1 when it is not set
 
 There are two ways to use ChatGpt Code Review:
 
@@ -35,6 +36,7 @@ pr: pr Id
 max_file_num: 10
 max_line_num: 1000
 max_commit_num: 100
+max_concurrency: 3
 review_suffixes:
   - ".go"
 ```
@@ -77,6 +79,7 @@ func main() {
 		MaxFileNum: 10,
 		MaxLineNum: 1000,
 		MaxCommitNum: 100,
+		MaxConcurrency: 3,
 		ReviewSuffixes: []string{".go"},
 	}
 

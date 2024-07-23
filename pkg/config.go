@@ -12,6 +12,7 @@ type Config struct {
 	MaxFileNum     int      `yaml:"max_file_num"`
 	MaxLineNum     int      `yaml:"max_line_num"`
 	MaxCommitNum   int      `yaml:"max_commit_num"`
+	MaxConcurrency int      `yaml:"max_concurrency"`
 	ReviewSuffixes []string `yaml:"review_suffixes"`
 }
 

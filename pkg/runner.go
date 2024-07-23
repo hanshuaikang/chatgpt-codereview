@@ -98,20 +98,55 @@ func (c *CodeReviewRunner) isHaveCodeReviewRecord(ctx context.Context, commit *g
 
 }
 
-func (c *CodeReviewRunner) RunCodeReview(ctx context.Context) error {
-
+func (c *CodeReviewRunner) getReadyCommits(ctx context.Context) ([]*github.RepositoryCommit, error) {
 	pendingCommits, err := c.githubCli.GetPendingReviewCommits()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if c.config.MaxCommitNum > 0 && len(pendingCommits) > c.config.MaxCommitNum {
 		fmt.Fprintf(os.Stdout, "no pending commits need to review\n")
-		return nil
+		return nil, fmt.Errorf("no pending commits need to review")
 	}
-	var wg sync.WaitGroup
+
+	var alreadyCommits []*github.RepositoryCommit
 
 	for _, commit := range pendingCommits {
+		if c.isHaveCodeReviewRecord(ctx, commit) {
+			fmt.Fprintf(os.Stdout, "commit[%s]: %s  already reviewed\n", *commit.SHA, *commit.Commit.Message)
+			continue
+		}
+		alreadyCommits = append(alreadyCommits, commit)
+	}
+
+	return alreadyCommits, nil
+
+}
+
+func (c *CodeReviewRunner) RunCodeReview(ctx context.Context) error {
+
+	alreadyCommits, err := c.getReadyCommits(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(alreadyCommits) == 0 {
+		fmt.Fprintf(os.Stdout, "No commits are ready for review.\n")
+		return nil
+	}
+
+	concurrency := 1
+	if c.config.MaxConcurrency > 0 {
+		concurrency = c.config.MaxConcurrency
+	}
+	if concurrency > len(alreadyCommits) {
+		concurrency = len(alreadyCommits)
+	}
+
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, concurrency)
+
+	for _, commit := range alreadyCommits {
 		if c.isHaveCodeReviewRecord(ctx, commit) {
 			fmt.Fprintf(os.Stdout, "commit[%s]: %s  already reviewed\n", *commit.SHA, *commit.Commit.Message)
 			continue
@@ -121,8 +156,12 @@ func (c *CodeReviewRunner) RunCodeReview(ctx context.Context) error {
 			continue
 		}
 		wg.Add(1)
+		semaphore <- struct{}{} // Acquire semaphore
 		go func(commit *github.RepositoryCommit) {
 			defer wg.Done()
+			defer func() {
+				<-semaphore
+			}()
 			fmt.Fprintf(os.Stdout, "now reviewing commit[%s]: %s\n", *commit.SHA, *commit.Commit.Message)
 			comments, err := c.reviewCommit(ctx, commit)
 			if err != nil {
