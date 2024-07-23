@@ -41,8 +41,11 @@ var runCmd = &cobra.Command{
 		}
 		defaultGptCli := chatgpt.NewGptClient(config)
 		githubCli := github.NewGithubCli(config.Token, config.Owner, config.Repo, config.Pr)
-		runner := pkg.NewCodeReviewRunner(&config, githubCli, defaultGptCli)
-
+		runner, err := pkg.NewCodeReviewRunner(&config, githubCli, defaultGptCli)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "get gpt runner failed: %s\n", err)
+			os.Exit(1)
+		}
 		ctx := context.Background()
 		err = runner.RunCodeReview(ctx)
 		if err != nil {
@@ -67,26 +70,9 @@ func parseConfig(path string) (pkg.Config, error) {
 		return pkg.Config{}, err
 	}
 
-	if config.Pr <= 0 {
-		return pkg.Config{}, fmt.Errorf("config.pr is invailed")
+	if err = pkg.ValidateConfig(config); err != nil {
+		return pkg.Config{}, err
 	}
-
-	if config.Owner == "" {
-		return pkg.Config{}, fmt.Errorf("config.owner is invailed")
-	}
-
-	if config.ApiKey == "" {
-		return pkg.Config{}, fmt.Errorf("config.api_key is invailed")
-	}
-
-	if config.Token == "" {
-		return pkg.Config{}, fmt.Errorf("config.token is invailed")
-	}
-
-	if config.Repo == "" {
-		return pkg.Config{}, fmt.Errorf("config.repo is invailed")
-	}
-
 	return config, nil
 
 }
