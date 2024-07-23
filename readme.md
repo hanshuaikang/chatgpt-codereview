@@ -11,7 +11,7 @@
 [English Document](https://github.com/hanshuaikang/chatgpt-codereview/blob/main/readme_en.md)
 ## Feature:
 - PR 下的 commit 只会 Review 一次
-- 基于全文件的Review 比基于 diff 的质量更高
+- 基于全文件的 Review 比基于 diff 的质量更高
 
 ## Usage
 
